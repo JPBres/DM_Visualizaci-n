@@ -34,8 +34,8 @@
 
 				//Crea una nueva variable para el piso de ser necesario
 				if (current[variable] === undefined) {
-					current[variable] = [];
 					zonesVars.push(variable);
+					pop.forEach(function(p) { p[variable] = []; });
 				}
 					
 				//Remueve a la persona de la zona en la que salió
