@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>VAST 2016 Challenge 2</title>
+    <script src="d3.min.js"></script>
+  </head>
+  <body>
+
+<script>
+
+	var pop = [{TS:Date.parse(0)}]; //Population status. lo crea con un elemento dummy para el momento cero.
+	var zonesVars = []; //variables dinamicas de zona / piso
+	
+	d3.json("json/proxOut-MC2.json", 
+		function(data) { 		
+			var index = 0;
+			data.forEach(function(d) { 
+
+				var variable = 'F' + d.message.floor + 'Z' + d.message.zone;
+				var card = d.message.proxCard;			
+				var ts = Date.parse(d.message.datetime);
+				
+				var current = pop[index];
+				
+				//Verifica si hubo más de una modificación en el mismo segundo
+				if (current.TS !== ts) {
+					prev = current;
+					current = { TS: ts };
+					zonesVars.forEach(function(v) { current[v] = prev[v].slice(); });
+					pop.push(current);
+					index++;
+				}
+
+				//Crea una nueva variable para el piso de ser necesario
+				if (current[variable] === undefined) {
+					zonesVars.push(variable);
+					pop.forEach(function(p) { p[variable] = []; });
+				}
+					
+				//Remueve a la persona de la zona en la que salió
+				zonesVars.forEach(function(v) { 					
+					var ci = current[v].indexOf(card);
+					if(ci > -1) current[v].splice(ci, 1);
+				});
+				
+				//Agrega a la persona a la nueva zona
+				current[variable].push(card); 				
+			});
+			
+			pop.splice(0, 1); //Remueve un primer elemento dummy			
+		});
+	
+  var svg = d3.select("body").append("svg")
+	.attr("width",  250)
+	.attr("height", 250);
+
+      var xScale = d3.scale.linear().range([0, 250]);
+      var yScale = d3.scale.linear().range([0, 250]);
+
+
+
+    </script>
+
+  </body>
+</html>
