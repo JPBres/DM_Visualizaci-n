@@ -1,0 +1,88 @@
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>Plano de prox zones</title>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.js"></script>
+<style>
+</style>
+</head>
+
+<body>
+<script>
+var outerWidth	= 550;
+var outerHeight = 314;
+var margin = { left: 0, top: 0, right: 20, bottom: 50 };
+
+var innerWidth  = outerWidth  - margin.left - margin.right;
+var innerHeight = outerHeight - margin.top  - margin.bottom;
+
+// definir un svg/g por piso
+var svg1 = d3.select("body").append("svg")
+	.attr("width",  outerWidth)
+	.attr("height", outerHeight)
+	;
+var g1 = svg1.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var svg2 = d3.select("body").append("svg")
+	.attr("width",  outerWidth)
+	.attr("height", outerHeight)
+	;
+var g2 = svg2.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var svg3 = d3.select("body").append("svg")
+	.attr("width",  outerWidth)
+	.attr("height", outerHeight)
+	;
+var g3 = svg3.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var xScale = d3.scale.linear().range([0, innerWidth]);
+var yScale = d3.scale.linear().range([0, innerHeight]);
+
+var borderColor = "gray";
+var border = 1;
+var fill = "none";
+var fill2 = "cyan";
+
+function todos() {
+	return true;
+}
+// funcion generica que pinta un piso en el g correspondiente, tomando los datos del piso unicamente
+function render(data, container=g, filter=todos) {
+	xScale.domain(d3.extent(data.map(function(d) { return d.points.map(function(e) { return e.x }).join(","); }).join(",").split(",").map(function(d) { return +d; })));
+	yScale.domain(d3.extent(data.map(function(d) { return d.points.map(function(e) { return e.y }).join(","); }).join(",").split(",").map(function(d) { return +d; })));
+	var zones = container.selectAll("polygon")
+		.data(data.filter(filter))
+		.enter()
+			.append("polygon")
+			.attr("id", function(d) { return 'f' + d.floor + 'z' + d.name; })
+			.attr("points", function(d) { return d.points.map(function(e) { return [xScale(e.x),yScale(e.y)].join(","); }).join(" "); })
+			.style("stroke", borderColor)
+			.style("fill", fill)
+			.style("stroke-width", border)
+			.on("mouseover", function(d) { d3.select(this).style("fill", fill2); console.log('f' + d.floor + 'z' + d.name); })
+			.on("mouseout", function(d) { d3.select(this).style("fill", fill); })
+			;
+}
+// funciones que pintan cada piso especificamente
+function renderF1(data) {
+	return render(data, g1, function(d) { return d.floor == 1; });
+}
+function renderF2(data) {
+	return render(data, g2, function(d) { return d.floor == 2; });
+}
+function renderF3(data) {
+	return render(data, g3, function(d) { return d.floor == 3; });
+}
+
+d3.json("prox-zones.json", renderF1);
+d3.json("prox-zones.json", renderF2);
+d3.json("prox-zones.json", renderF3);
+</script>
+</body>
+</html>
+
+
+
